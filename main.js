@@ -2,8 +2,12 @@ var app = require('app'); // Module to control application life.
 var express = require('express');
 var exapp = express();
 var fs = require('fs');
+var https = require('https');
 var launcherCode = '';
 var path = require('path');
+var botURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/bot.user.js"
+var launcherURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/launcher.user.js"
+var feedingBotURL = "https://cdn.rawgit.com/Apostolique/AposFeedingBot/master/AposFeedingBot.user.js"
 var path_to_public = __dirname + '/public/'
 var oldUsername = '';
 var regex = /^(?=.*?names\ \=\ \[).*$/m;
@@ -25,6 +29,36 @@ function writeUsername(usr) {
         }
         console.log("The file was saved!");
     });
+}
+
+function updateBot(callback){
+    var botHasFinished = false;
+    botFile = fs.createWriteStream(__dirname + "/public/AposBot.user.js")
+    https.get(botURL, function(res) {
+        res.pipe(botFile);
+        launcherHasFinished = true;
+    }).on('error', function(e) {
+        console.error(e);
+    });
+    var launcherHasFinished = false;
+    launcherFile = fs.createWriteStream(__dirname + "/public/AposBotLauncher.user.js")
+    https.get(launcherURL, function(res) {
+        res.pipe(launcherFile);
+        launcherHasFinished = true;
+    }).on('error', function(e) {
+        console.error(e);
+    });
+    var feedingBotHasFinished = false;
+    feedingBotFile = fs.createWriteStream(__dirname + "/public/AposFeedingBot.user.js")
+    https.get(feedingBotURL, function(res) {
+        res.pipe(feedingBotFile);
+        feedingBotHasFinished = true;
+    }).on('error', function(e) {
+        console.error(e);
+    });
+    if(launcherHasFinished && botHasFinished && feedingBotFile){
+        callback();
+    }
 }
 
 function readLauncher() {
@@ -104,6 +138,12 @@ app.on('ready', function () {
             }
         }, 1000);
         local.close();
+    });
+    ipc.on('update', function (event, arg) {
+
+        updateBot(function() {
+            event.returnValue = "done!"
+        })
     });
 
     function loadBot(win) {
