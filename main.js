@@ -41,7 +41,7 @@ function updateBot(callback){
         console.error(e);
     });
     var launcherHasFinished = false;
-    launcherFile = fs.createWriteStream(__dirname + "/public/AposBotLauncher.user.js")
+    launcherFile = fs.createWriteStream(__dirname + "/public/AposLauncher.user.js")
     https.get(launcherURL, function(res) {
         res.pipe(launcherFile);
         launcherHasFinished = true;
