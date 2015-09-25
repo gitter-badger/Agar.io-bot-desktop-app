@@ -74,8 +74,8 @@ function getLatestCommit() {
                 latestVersion = latestVersion.substring(latestVersion.indexOf("// @version")+11,latestVersion.indexOf("// @grant"));
 
                 latestVersion = parseFloat(latestVersion + 0.0000);
-                var myVersion = parseFloat(aposBotVersion + 0.0000); 
-                
+                var myVersion = parseFloat(aposBotVersion + 0.0000);
+
                 if(latestVersion > myVersion)
                 {
                     update("aposBot", "bot.user.js", "https://github.com/Apostolique/Agar.io-bot/blob/" + sha + "/bot.user.js/");
@@ -186,7 +186,7 @@ function AposBot() {
             var currentRed = currentColor.substring(1,3);
             var currentGreen = currentColor.substring(3,5);
             var currentBlue = currentColor.substring(5,7);
-            
+
             var currentTeam = this.getTeam(currentRed, currentGreen, currentBlue);
 
             var cellColor = cell.color;
@@ -230,7 +230,7 @@ function AposBot() {
     };
 
     this.isThreat = function(blob, cell) {
-        
+
         if (!cell.isVirus() && this.compareSize(blob, cell, 1.30)) {
             return true;
         }
@@ -273,7 +273,7 @@ function AposBot() {
                     //IT'S FOOD!
                     foodElementList.push(listToUse[element]);
 
-                    
+
                 } else if (that.isThreat(blob, listToUse[element])) {
                     //IT'S DANGER!
                     threatList.push(listToUse[element]);
@@ -857,10 +857,10 @@ function AposBot() {
                         //console.log("Found distance.");
 
                         var enemyCanSplit = this.canSplit(player[k], allPossibleThreats[i]);
-                        var secureDistance = (enemyCanSplit ? splitDangerDistance : normalDangerDistance);
-                        
+
                         for (var j = clusterAllFood.length - 1; j >= 0 ; j--) {
-                            if (this.computeDistance(allPossibleThreats[i].x, allPossibleThreats[i].y, clusterAllFood[j][0], clusterAllFood[j][1]) < secureDistance + shiftDistance)
+                            var secureDistance = (enemyCanSplit ? splitDangerDistance : normalDangerDistance);
+                            if (this.computeDistance(allPossibleThreats[i].x, allPossibleThreats[i].y, clusterAllFood[j][0], clusterAllFood[j][1]) < secureDistance)
                                 clusterAllFood.splice(j, 1);
                         }
 

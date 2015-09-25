@@ -1,4 +1,6 @@
 node_modules
 agar.asar
 .gitignore
+nodejs
+electron
 Flat-UI-master

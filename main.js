@@ -5,16 +5,17 @@ var fs = require('fs');
 var https = require('https');
 var launcherCode = '';
 var path = require('path');
-var botURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/bot.user.js"
-var launcherURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/launcher.user.js"
-var feedingBotURL = "https://cdn.rawgit.com/Apostolique/AposFeedingBot/master/AposFeedingBot.user.js"
+//var botURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/bot.user.js"
+//var launcherURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/launcher.user.js"
+//var feedingBotURL = "https://cdn.rawgit.com/Apostolique/AposFeedingBot/master/AposFeedingBot.user.js"
 var path_to_public = __dirname + '/public/'
+var scriptsToLoad = {}
 var oldUsername = '';
 var regex = /^(?=.*?names\ \=\ \[).*$/m;
 var BrowserWindow = require('browser-window'); // Module to create native browser window.
 
 function writeLauncher(codeToWrite) {
-    fs.writeFile(__dirname + '/public/AposLauncher.user.js', codeToWrite, function (err) {
+    fs.writeFile(__dirname + '/public/scripts/launcher.user.js', codeToWrite, function (err) {
         if (err) {
             return console.log(err);
         }
@@ -31,39 +32,18 @@ function writeUsername(usr) {
     });
 }
 
-function updateBot(callback){
-    var botHasFinished = false;
-    botFile = fs.createWriteStream(__dirname + "/public/AposBot.user.js")
-    https.get(botURL, function(res) {
-        res.pipe(botFile);
-        launcherHasFinished = true;
-    }).on('error', function(e) {
-        console.error(e);
-    });
-    var launcherHasFinished = false;
-    launcherFile = fs.createWriteStream(__dirname + "/public/AposLauncher.user.js")
-    https.get(launcherURL, function(res) {
-        res.pipe(launcherFile);
-        launcherHasFinished = true;
-    }).on('error', function(e) {
-        console.error(e);
-    });
-    var feedingBotHasFinished = false;
-    feedingBotFile = fs.createWriteStream(__dirname + "/public/AposFeedingBot.user.js")
-    https.get(feedingBotURL, function(res) {
-        res.pipe(feedingBotFile);
-        feedingBotHasFinished = true;
-    }).on('error', function(e) {
-        console.error(e);
-    });
-    if(launcherHasFinished && botHasFinished && feedingBotFile){
-        callback();
+function updateBotList(){
+    scriptsToLoad = fs.readdirSync(__dirname + '/public/scripts');
+    for(var i = 0; i<scriptsToLoad.length; i++){
+        if(scriptsToLoad[i].indexOf('disabled') > -1){
+            scriptsToLoad.splice(i, 1);
+        }
     }
 }
 
 function readLauncher() {
     fs = require('fs')
-    fs.readFile(__dirname + '/public/AposLauncher.user.js', 'utf8', function (err, data) {
+    fs.readFile(__dirname + '/public/scripts/launcher.user.js', 'utf8', function (err, data) {
         if (err) {
             return console.log(err);
         }
@@ -139,18 +119,13 @@ app.on('ready', function () {
         }, 1000);
         local.close();
     });
-    ipc.on('update', function (event, arg) {
-
-        updateBot(function() {
-            event.returnValue = "done!"
-        })
-    });
 
     function loadBot(win) {
-		win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/parse-1.5.0.min.js',head.appendChild(script);")
-		win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/AposLauncher.user.js',head.appendChild(script);")
-        win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/AposBot.user.js',head.appendChild(script);")
-		win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/AposFeedingBot.user.js',head.appendChild(script);")
+        updateBotList();
+        for(var i = 0; i<scriptsToLoad.length; i++){
+            win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/scripts/" + scriptsToLoad[i] + "',head.appendChild(script);")
+
+        }
 
     }
     function loadNoBot(win, username) {
