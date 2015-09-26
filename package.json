@@ -9,7 +9,8 @@
     },
     "dependencies": {
         "express": "",
-        "electron": ""
+        "electron": "",
+        "portscanner": ""
     },
     "license": "Apache-2.0"
 }
