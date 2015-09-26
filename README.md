@@ -1,5 +1,7 @@
 ### Description
 
+[![Join the chat at https://gitter.im/FliiFe/Agar.io-bot-desktop-app](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/FliiFe/Agar.io-bot-desktop-app?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 This is an app built on `electron`, which uses web technologies on top of `nodejs`. It runs @Apostolique Agar.io bot.
 
