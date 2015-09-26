@@ -5,10 +5,8 @@ var fs = require('fs');
 var https = require('https');
 var launcherCode = '';
 var path = require('path');
-//var botURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/bot.user.js"
-//var launcherURL = "https://cdn.rawgit.com/Apostolique/Agar.io-bot/master/launcher.user.js"
-//var feedingBotURL = "https://cdn.rawgit.com/Apostolique/AposFeedingBot/master/AposFeedingBot.user.js"
-var path_to_public = __dirname + '/public/'
+var portscanner = require('portscanner');
+var path_to_public = __dirname + '/public/';
 var scriptsToLoad = {}
 var oldUsername = '';
 var regex = /^(?=.*?names\ \=\ \[).*$/m;
@@ -23,6 +21,18 @@ function writeLauncher(codeToWrite) {
     });
 }
 
+function isPortTaken(port, callback) {
+    portscanner.checkPortStatus(port, '127.0.0.1', function (error, status) {
+        console.log(status)
+        if (error) console.log(error)
+        if (status === 'open') {
+            callback(false);
+        } else {
+            callback(true);
+        }
+    })
+}
+
 function writeUsername(usr) {
     fs.writeFile(__dirname + '/public/user', usr, function (err) {
         if (err) {
@@ -32,10 +42,10 @@ function writeUsername(usr) {
     });
 }
 
-function updateBotList(){
+function updateBotList() {
     scriptsToLoad = fs.readdirSync(__dirname + '/public/scripts');
-    for(var i = 0; i<scriptsToLoad.length; i++){
-        if(scriptsToLoad[i].indexOf('disabled') > -1){
+    for (var i = 0; i < scriptsToLoad.length; i++) {
+        if (scriptsToLoad[i].indexOf('disabled') > -1) {
             scriptsToLoad.splice(i, 1);
         }
     }
@@ -61,18 +71,20 @@ function readUsername() {
     });
 }
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is GCed.
-
 exapp.use(express.static(__dirname + '/public'));
 
-exapp.listen(3000, function (err) {
-    if (err) {
-        console.log(err);
-        return;
+isPortTaken(3000, function(isAvailable){
+    if(isAvailable === true){
+        exapp.listen(3000, function (err) {
+            if (err) {
+                return;
+            }
+            console.log(new Date() + ': Server started on port 3000');
+        });
+    }else{
+        console.warn('Server already running on port 3000')
     }
-    console.log(new Date() + ': Server started on port 3000');
-});
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -113,21 +125,27 @@ app.on('ready', function () {
         setTimeout(function () {
             if (arg[1] === true) {
                 loadBot(agario);
-            }else{
+            } else {
                 loadNoBot(agario, arg[0]);
             }
-        }, 1000);
+        }, 500);
         local.close();
     });
 
     function loadBot(win) {
         updateBotList();
-        for(var i = 0; i<scriptsToLoad.length; i++){
-            win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/scripts/" + scriptsToLoad[i] + "',head.appendChild(script);")
+        for (var i = 0; i < scriptsToLoad.length; i++) {
+            console.log(scriptsToLoad[i]);
+            (function (index) {
+                setTimeout(function () {
+                    win.webContents.executeJavaScript("var head=document.getElementsByTagName('head')[0],script=document.createElement('script');script.type='text/javascript',script.src='http://localhost:3000/scripts/" + scriptsToLoad[index] + "',head.appendChild(script);")
+                }, i * 500);
+            })(i);
 
         }
 
     }
+
     function loadNoBot(win, username) {
         //TODO: Launch game but not bot here. Find right scripts.
         win.webContents.executeJavaScript("document.getElementById('nick').value = '" + username + "'");
